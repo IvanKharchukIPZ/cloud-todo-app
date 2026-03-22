@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Cloud ToDo API
+  description: MVP API для керування задачами (завдання для курсу)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Локальний сервер
+  - url: https://{app-runner-id}.awsapprunner.com
+    description: Production сервер (AWS App Runner)
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Перевірка стану сервера
+      security: []
+      responses:
+        '200':
+          description: Сервер працює
+
+  /api/tasks:
+    get:
+      summary: Отримати список задач
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [NEW, IN_PROGRESS, DONE]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Список задач успішно отримано
+    post:
+      summary: Створити нову задачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  minLength: 3
+                  maxLength: 120
+                priority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH]
+      responses:
+        '201':
+          description: Задачу створено
+        '400':
+          description: Помилка валідації

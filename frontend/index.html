@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud ToDo - MVP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Cloud ToDo App</h1>
+        
+        <form id="todo-form">
+            <input type="text" id="task-title" placeholder="Що потрібно зробити?" required minlength="3" maxlength="120">
+            <select id="task-priority">
+                <option value="LOW">Низький пріоритет</option>
+                <option value="MEDIUM" selected>Середній пріоритет</option>
+                <option value="HIGH">Високий пріоритет</option>
+            </select>
+            <button type="submit">Додати</button>
+        </form>
+
+        <div class="filters">
+            <label>Фільтри:</label>
+            <select id="filter-status">
+                <option value="">Усі статуси</option>
+                <option value="NEW">Нові</option>
+                <option value="DONE">Виконані</option>
+            </select>
+            <select id="filter-priority">
+                <option value="">Будь-який пріоритет</option>
+                <option value="LOW">Низькі</option>
+                <option value="MEDIUM">Середні</option>
+                <option value="HIGH">Високі</option>
+            </select>
+        </div>
+
+        <ul id="task-list">
+            </ul>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
