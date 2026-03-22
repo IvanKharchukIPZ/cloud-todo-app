@@ -1,8 +1,20 @@
 const API_BASE_URL = 'https://qnnpmfasaw.us-east-1.awsapprunner.com/api'; 
 
+function getOrCreateUserId() {
+    let userId = localStorage.getItem('todo_user_id');
+    if (!userId) {
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('todo_user_id', userId);
+    }
+    return userId;
+}
+
+const currentUserId = getOrCreateUserId();
+
 const HEADERS = {
     'Content-Type': 'application/json',
-    'X-API-Key': 'my-super-secret-key-123' 
+    'X-API-Key': 'my-super-secret-key-123',
+    'X-User-Id': currentUserId 
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -98,7 +110,7 @@ function renderTasks(tasks) {
     const list = document.getElementById('task-list');
     list.innerHTML = '';
 
-    if (tasks.length === 0) {
+    if (!Array.isArray(tasks) || tasks.length === 0) {
         list.innerHTML = '<li style="justify-content: center; color: #7f8c8d;">Задач не знайдено</li>';
         return;
     }

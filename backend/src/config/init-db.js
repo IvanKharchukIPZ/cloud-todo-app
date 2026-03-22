@@ -4,18 +4,36 @@ const db = require('./db');
 
 const initDb = async () => {
     try {
-        const sqlPath = path.join(__dirname, '../../migrations/V1__Create_tasks_table.sql');
-        const sql = fs.readFileSync(sqlPath, 'utf8');
+        const migrationsDir = path.join(__dirname, '../../migrations');
+        
+        const files = fs.readdirSync(migrationsDir)
+            .filter(file => file.endsWith('.sql'))
+            .sort();
 
-        console.log('Починаємо міграцію бази даних...');
-        await db.query(sql);
-        console.log('Таблиця "tasks" готова до роботи!');
-    } catch (err) {
-        if (err.code === '42P07') {
-            console.log('Таблиця "tasks" вже існує, йдемо далі.');
-        } else {
-            console.error('Помилка під час створення таблиці:', err.message);
+        console.log('Починаємо перевірку та запуск міграцій...');
+
+        for (const file of files) {
+            const sqlPath = path.join(migrationsDir, file);
+            const sql = fs.readFileSync(sqlPath, 'utf8');
+
+            try {
+                console.log(`-> Виконання ${file}...`);
+                await db.query(sql);
+                console.log(`   Успішно!`);
+            } catch (err) {
+
+                if (err.code === '42P07' || err.code === '42701') {
+                    console.log(`   Пропущено (вже застосовано).`);
+                } else {
+                    console.error(`   Помилка під час виконання ${file}:`, err.message);
+                    throw err; 
+                }
+            }
         }
+        
+        console.log('Всі міграції актуальні! База готова до роботи.');
+    } catch (err) {
+        console.error('Критична помилка ініціалізації БД:', err.message);
     }
 };
 

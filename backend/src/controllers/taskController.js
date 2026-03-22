@@ -12,7 +12,7 @@ class TaskController {
                 error.details = validationResult.error.errors;
                 throw error;
             }
-            const task = await taskService.createTask(validationResult.data);
+            const task = await taskService.createTask(req.user.id, validationResult.data);
             res.status(201).json(task);
         } catch (error) {
             next(error);
@@ -22,7 +22,7 @@ class TaskController {
     async getTasks(req, res, next) {
         try {
             const { status, priority, limit, offset } = req.query;
-            const tasks = await taskService.getAllTasks({ status, priority, limit, offset });
+            const tasks = await taskService.getAllTasks(req.user.id, { status, priority, limit, offset });
             res.status(200).json(tasks);
         } catch (error) {
             next(error);
@@ -31,7 +31,7 @@ class TaskController {
 
     async getTaskById(req, res, next) {
         try {
-            const task = await taskService.getTaskById(req.params.id);
+            const task = await taskService.getTaskById(req.user.id, req.params.id);
             if (!task) {
                 const error = new Error('Задачу не знайдено');
                 error.statusCode = 404;
@@ -45,7 +45,7 @@ class TaskController {
 
     async updateTaskFully(req, res, next) {
         try {
-            const updatedTask = await taskService.updateTask(req.params.id, req.body);
+            const updatedTask = await taskService.updateTask(req.user.id, req.params.id, req.body);
             res.status(200).json(updatedTask);
         } catch (error) {
             next(error);
@@ -54,7 +54,7 @@ class TaskController {
 
     async updateTaskPartially(req, res, next) {
         try {
-            const updatedTask = await taskService.patchTask(req.params.id, req.body);
+            const updatedTask = await taskService.patchTask(req.user.id, req.params.id, req.body);
             res.status(200).json(updatedTask);
         } catch (error) {
             next(error);
@@ -63,7 +63,7 @@ class TaskController {
 
     async deleteTask(req, res, next) {
         try {
-            await taskService.deleteTask(req.params.id);
+            await taskService.deleteTask(req.user.id, req.params.id);
             res.status(204).send();
         } catch (error) {
             next(error);

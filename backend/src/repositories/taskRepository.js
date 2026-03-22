@@ -1,27 +1,28 @@
 const db = require('../config/db');
 
 class TaskRepository {
-    async create(taskData) {
+    async create(userId, taskData) {
         const query = `
-            INSERT INTO tasks (title, description, priority, status)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO tasks (title, description, priority, status, user_id)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *;
         `;
         const values = [
             taskData.title, 
             taskData.description, 
             taskData.priority || 'MEDIUM', 
-            taskData.status || 'NEW'
+            taskData.status || 'NEW',
+            userId
         ];
         
         const result = await db.query(query, values);
         return result.rows[0];
     }
 
-    async findAll({ status, priority, limit = 10, offset = 0 }) {
-        let query = 'SELECT * FROM tasks WHERE 1=1';
-        const values = [];
-        let paramIndex = 1;
+    async findAll(userId, { status, priority, limit = 10, offset = 0 }) {
+        let query = 'SELECT * FROM tasks WHERE user_id = $1';
+        const values = [userId];
+        let paramIndex = 2;
 
         if (status) {
             query += ` AND status = $${paramIndex++}`;
@@ -40,16 +41,16 @@ class TaskRepository {
         return result.rows;
     }
 
-    async findById(id) {
-        const query = 'SELECT * FROM tasks WHERE id = $1';
-        const result = await db.query(query, [id]);
+    async findById(userId, id) {
+        const query = 'SELECT * FROM tasks WHERE id = $1 AND user_id = $2';
+        const result = await db.query(query, [id, userId]);
         return result.rows[0];
     }
 
-    async update(id, taskData) {
+    async update(userId, id, taskData) {
         const fields = [];
-        const values = [id];
-        let paramIndex = 2;
+        const values = [id, userId]; 
+        let paramIndex = 3;
 
         for (const [key, value] of Object.entries(taskData)) {
             if (['title', 'description', 'priority', 'status'].includes(key)) {
@@ -58,12 +59,12 @@ class TaskRepository {
             }
         }
 
-        if (fields.length === 0) return this.findById(id);
+        if (fields.length === 0) return this.findById(userId, id);
 
         const query = `
             UPDATE tasks 
             SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1
+            WHERE id = $1 AND user_id = $2
             RETURNING *;
         `;
 
@@ -71,9 +72,9 @@ class TaskRepository {
         return result.rows[0];
     }
 
-    async delete(id) {
-        const query = 'DELETE FROM tasks WHERE id = $1 RETURNING id';
-        const result = await db.query(query, [id]);
+    async delete(userId, id) {
+        const query = 'DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id';
+        const result = await db.query(query, [id, userId]);
         return result.rowCount > 0;
     }
 }
